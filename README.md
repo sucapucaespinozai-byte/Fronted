@@ -19,7 +19,9 @@ Aplicación SPA para administrar una farmacia, creada con Angular 22 y conectada
 
 4. Abre [http://localhost:4200](http://localhost:4200) e inicia sesión con una cuenta habilitada en tu backend.
 
-La URL de la API se configura en `src/environments/environment.ts`. El backend de este proyecto ya permite el origen `http://localhost:4200`; si el origen cambia, configura CORS en el backend por separado. Esta SPA no ejecuta SQL, migraciones ni operaciones en DBeaver.
+Desarrollo usa `src/environments/environment.development.ts` (`http://localhost:8080/api/v1`); producción usa `src/environments/environment.ts` (`/api/v1`). El backend de este proyecto ya permite el origen `http://localhost:4200`; si el origen cambia, configura CORS en el backend por separado. Esta SPA no ejecuta SQL, migraciones ni operaciones en DBeaver.
+
+Ver [la preparación de producción y las evidencias de sesión 13](docs/sesion13-produccion.md).
 
 ## Funcionalidades
 
