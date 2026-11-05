@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { EMPTY, expand, Observable, reduce } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Categoria,
@@ -11,6 +11,12 @@ import {
   Venta,
   VentaRequest,
 } from './tienda.model';
+
+interface Pagina<T> {
+  content: T[];
+  number: number;
+  last: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TiendaApiService {
@@ -38,7 +44,7 @@ export class TiendaApiService {
   }
 
   listarProductos(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(`${this.baseUrl}/productos`);
+    return this.listarPaginas<Producto>('productos');
   }
 
   obtenerProducto(id: number): Observable<Producto> {
@@ -58,7 +64,19 @@ export class TiendaApiService {
   }
 
   listarClientes(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${this.baseUrl}/clientes`);
+    return this.listarPaginas<Cliente>('clientes');
+  }
+
+  private listarPaginas<T>(recurso: string): Observable<T[]> {
+    const cargarPagina = (pagina: number) => this.http.get<Pagina<T>>(
+      `${this.baseUrl}/${recurso}`,
+      { params: { pagina, tamanio: 100, ordenarPor: 'id', direccion: 'asc' } },
+    );
+    // Los selectores y listados existentes consumen el conjunto de páginas como arreglo.
+    return cargarPagina(0).pipe(
+      expand((pagina) => pagina.last ? EMPTY : cargarPagina(pagina.number + 1)),
+      reduce((filas, pagina) => [...filas, ...pagina.content], [] as T[]),
+    );
   }
 
   listarVentas(): Observable<Venta[]> {

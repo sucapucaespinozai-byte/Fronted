@@ -5,10 +5,10 @@ import { AuthService } from '../auth/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const token = inject(AuthService).token();
-  const apiOrigin = new URL(environment.apiUrl).origin;
+  const apiUrl = new URL(environment.apiUrl, globalThis.location.origin);
   const requestUrl = new URL(request.url, globalThis.location.origin);
 
-  if (!token || requestUrl.origin !== apiOrigin || !requestUrl.pathname.startsWith('/api/v1/')) {
+  if (!token || requestUrl.origin !== apiUrl.origin || !requestUrl.pathname.startsWith(`${apiUrl.pathname.replace(/\/$/, '')}/`)) {
     return next(request);
   }
 
