@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, invitadoGuard } from './core/guards/auth.guard';
 import { permisoGuard } from './core/guards/permiso.guard';
-import { MainLayout } from './layout/main-layout';
 
 export const routes: Routes = [
   {
@@ -12,11 +11,16 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: MainLayout,
+    loadComponent: () => import('./layout/main-layout').then((module) => module.MainLayout),
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'categorias' },
+      {
+        path: 'inicio',
+        title: 'Inicio | PharmaSoft',
+        loadComponent: () => import('./features/inicio/inicio').then((module) => module.Inicio),
+      },
       {
         path: 'categorias',
         canActivate: [permisoGuard],

@@ -14,6 +14,7 @@ export class MainLayout {
 
   protected readonly menu = computed(() => {
     const links = [
+      { label: 'Inicio', route: '/inicio', icon: '⌂', permission: null },
       {
         label: 'Categorías',
         route: '/categorias',

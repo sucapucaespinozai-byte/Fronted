@@ -1,0 +1,9 @@
+:host { display: block; }
+.inicio-resumen { min-height: clamp(360px, 58vh, 680px); }
+.inicio-reporte { margin-top: 28px; }
+.reporte-placeholder { min-height: 240px; padding: 24px; }
+.reporte-placeholder h2 { margin: 0 0 12px; font-size: 18px; }
+.reporte-placeholder p { color: #637168; font-size: 13px; }
+@media (max-width: 700px) {
+  .inicio-resumen { min-height: auto; grid-template-columns: 1fr; }
+}
