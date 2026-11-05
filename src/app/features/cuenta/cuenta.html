@@ -1,0 +1,21 @@
+<section class="page-heading page-heading--compact">
+  <div><span class="eyebrow">PERFIL</span><h1>Mi cuenta</h1><p>Consulta los datos de tu sesión y actualiza tu contraseña.</p></div>
+</section>
+@if (auth.sesion(); as session) {
+  <section class="account-grid">
+    <article class="form-card account-profile">
+      <div class="account-profile__identity"><span class="account-avatar">{{ session.nombreCompleto.slice(0, 1).toUpperCase() }}</span><div><h2>{{ session.nombreCompleto }}</h2><p>@{{ session.username }}</p></div></div>
+      <dl class="detail-list"><div><dt>Roles</dt><dd class="role-list">@for (role of session.roles; track role) { <span class="badge">{{ role }}</span> }</dd></div><div><dt>Vencimiento de sesión</dt><dd>{{ session.expiraEn | date:'dd/MM/yyyy, HH:mm:ss' }}</dd></div><div><dt>Permisos</dt><dd class="permission-list">@for (permission of session.permisos; track permission) { <span>{{ permission }}</span> }</dd></div></dl>
+    </article>
+    <form class="form-card account-password" [formGroup]="form" (ngSubmit)="cambiarPassword()" novalidate>
+      <div class="form-card__header"><span class="form-card__icon">◇</span><div><strong>Cambiar contraseña</strong><p>Usa al menos 8 caracteres, con una letra y un número.</p></div></div>
+      @if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
+      @if (success()) { <div class="success" role="status">{{ success() }}</div> }
+      <label for="current-password">Contraseña actual</label><input id="current-password" class="field" type="password" autocomplete="current-password" formControlName="passwordActual">
+      <label for="new-password">Nueva contraseña</label><input id="new-password" class="field" type="password" autocomplete="new-password" formControlName="passwordNueva">
+      @if (form.controls.passwordNueva.touched && form.controls.passwordNueva.invalid) { <small class="field-error">Debe tener de 8 a 72 caracteres e incluir una letra y un número.</small> }
+      <label for="confirm-password">Confirmar nueva contraseña</label><input id="confirm-password" class="field" type="password" autocomplete="new-password" formControlName="confirmarPassword">
+      <div class="form-card__actions"><button class="button button--primary" type="submit" [disabled]="saving()">{{ saving() ? 'Actualizando…' : 'Actualizar contraseña' }}</button></div>
+    </form>
+  </section>
+}

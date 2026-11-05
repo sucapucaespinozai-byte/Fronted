@@ -1,0 +1,37 @@
+<section class="page-heading page-heading--compact">
+  <div><a routerLink="/ventas" class="back-link">← Ventas</a><h1>Nueva venta</h1><p>Selecciona al cliente y los productos de esta operación.</p></div>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
+@if (loading()) { <div class="loading-card">Cargando clientes y productos…</div> }
+@else {
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <section class="form-card sale-section">
+      <div class="form-card__header"><span class="form-card__icon">◎</span><div><strong>Cliente</strong><p>La venta se registrará a nombre del cliente seleccionado.</p></div></div>
+      @if (clients().length) {
+        <label class="form-label" for="sale-client">Cliente <span>*</span></label>
+        <select id="sale-client" class="field field--select" formControlName="clienteId"><option value="">Selecciona un cliente</option>@for (client of clients(); track client.id) { <option [value]="client.id">{{ client.nombres }} {{ client.apellidos }} · {{ client.dni }}</option> }</select>
+      } @else {
+        <div class="notice" role="status">No hay clientes activos disponibles. Verifica que existan clientes en el backend.</div>
+      }
+    </section>
+
+    <section class="form-card sale-section">
+      <div class="form-card__header"><span class="form-card__icon">◈</span><div><strong>Productos</strong><p>El precio se toma del inventario; no se modifica el stock desde el formulario.</p></div></div>
+      @if (!products().length) { <div class="notice" role="status">No hay productos disponibles en el inventario.</div> }
+      @else {
+        <div class="sale-lines">
+          @for (line of lines(); track $index; let index = $index) {
+            <div class="sale-line">
+              <label class="sale-line__product"><span>Producto</span><select class="field field--select" [value]="line.productId ?? ''" (change)="seleccionarProducto(index, $event)"><option value="">Selecciona un producto</option>@for (product of products(); track product.id) { <option [value]="product.id" [disabled]="product.stock < 1">{{ product.nombre }} · {{ product.precio | currency:'PEN':'symbol':'1.2-2' }} · {{ product.stock }} un.</option> }</select></label>
+              <label class="sale-line__quantity"><span>Cantidad</span><input class="field" type="number" min="1" step="1" [value]="line.quantity" (input)="cambiarCantidad(index, $event)"></label>
+              <button class="icon-button icon-button--remove" type="button" aria-label="Eliminar producto" [disabled]="lines().length === 1" (click)="quitarLinea(index)">×</button>
+            </div>
+          }
+        </div>
+        <button type="button" class="button button--secondary add-line" (click)="agregarLinea()">+ Agregar producto</button>
+      }
+      <div class="sale-total"><span>Total de la venta</span><strong>{{ total() | currency:'PEN':'symbol':'1.2-2' }}</strong></div>
+    </section>
+    <div class="form-card__actions form-card__actions--outside"><a class="button button--secondary" routerLink="/ventas">Cancelar</a><button class="button button--primary" type="submit" [disabled]="saving() || !products().length || !clients().length">{{ saving() ? 'Registrando…' : 'Registrar venta' }}</button></div>
+  </form>
+}

@@ -1,0 +1,65 @@
+.app-shell { min-height: 100vh; }
+
+/* 🟦 CAMBIO DE PALETA: Sidebar en Azul Marino Profesional (#0f172a) */
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; width: 250px; flex-direction: column; padding: 28px 18px 18px; background: #0f172a; color: #cbd5e1; }
+.brand { display: flex; align-items: center; gap: 12px; margin: 0 8px 48px; color: #f8fafc; font-size: 20px; font-weight: 750; letter-spacing: -.6px; text-decoration: none; }
+
+/* 🟦 Logo mark con acento azul claro / celeste médico (#38bdf8) */
+.brand__mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; background: #38bdf8; color: #0f172a; font-size: 30px; font-weight: 500; }
+.brand__soft { color: #38bdf8; }
+.brand small { display: block; margin-top: 3px; color: #94a3b8; font-size: 9px; font-weight: 600; letter-spacing: 1.2px; }
+
+.sidebar__caption { padding: 0 11px 12px; color: #64748b; font-size: 10px; font-weight: 700; letter-spacing: 1.35px; }
+.navigation { display: grid; gap: 6px; }
+.navigation__link { display: flex; min-height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; color: #94a3b8; font-size: 14px; text-decoration: none; transition: background .16s, color .16s; }
+
+/* 🟦 Hover y enlace activo con un azul vibrante (#1e293b / #38bdf8) */
+.navigation__link:hover, .navigation__link--active { background: #1e293b; color: #38bdf8; }
+.navigation__icon { width: 21px; text-align: center; font-size: 18px; }
+
+.sidebar__bottom { display: grid; gap: 14px; margin-top: auto; }
+.profile-card { display: flex; align-items: center; gap: 10px; padding: 14px 8px 0; border-top: 1px solid #1e293b; }
+
+/* 🟦 Avatar y colores de perfil */
+.avatar { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #1e293b; color: #38bdf8; font-weight: 700; }
+.profile-card__text { display: grid; min-width: 0; gap: 3px; }
+.profile-card__text strong { overflow: hidden; color: #f8fafc; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.profile-card__text span { overflow: hidden; color: #94a3b8; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+.icon-button, .mobile-menu { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.icon-button { margin-left: auto; font-size: 18px; }
+
+.main-area { display: flex; min-height: 100vh; flex-direction: column; margin-left: 250px; background-color: #f8fafc; } /* Fondo general limpio tipo app médica */
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; height: 70px; flex: 0 0 auto; align-items: center; justify-content: space-between; padding: 0 38px; border-bottom: 1px solid #e2e8f0; background: rgb(255 255 255 / 95%); backdrop-filter: blur(12px); }
+.topbar__breadcrumbs { display: flex; align-items: center; gap: 10px; color: #64748b; font-size: 12px; }
+.topbar__breadcrumbs strong { color: #0f172a; font-weight: 600; }
+.topbar__session { display: flex; align-items: center; gap: 8px; color: #475569; font-size: 11px; font-weight: 600; }
+
+/* 🟦 Indicador de estado activo (Verde médico clínico para el punto de sesión) */
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; }
+.topbar__expiry { color: #94a3b8; font-weight: 400; }
+
+.page-content { width: min(1120px, 100%); flex: 1; margin: 0 auto; padding: 36px 38px 44px; }
+.footer { padding: 0 38px 20px; color: #94a3b8; font-size: 10px; }
+.footer span { padding: 0 5px; }
+
+.session-warning { display: flex; align-items: center; gap: 16px; padding: 12px 38px; background: #fef3c7; color: #92400e; font-size: 13px; }
+.session-warning a { color: #78350f; font-weight: 700; }
+.session-warning button { margin-left: auto; border: 0; background: none; color: inherit; font-size: 20px; cursor: pointer; }
+
+.mobile-menu, .mobile-overlay { display: none; }
+
+@media (max-width: 760px) {
+  .sidebar { transform: translateX(-100%); transition: transform .2s; }
+  .sidebar--open { transform: translateX(0); }
+  .main-area { margin-left: 0; }
+  .topbar { height: 62px; justify-content: flex-start; gap: 14px; padding: 0 18px; }
+  .mobile-menu { display: inline-grid; width: 34px; height: 34px; place-items: center; color: #0f172a; font-size: 19px; }
+  .topbar__session { margin-left: auto; font-size: 0; }
+  .topbar__expiry { display: none; }
+  .page-content { padding: 26px 18px 34px; }
+  .footer { padding: 0 18px 16px; }
+  .session-warning { flex-wrap: wrap; padding: 12px 18px; }
+  .session-warning button { margin-left: 0; }
+  .mobile-overlay { position: fixed; inset: 0; z-index: 15; display: block; width: 100%; border: 0; background: rgb(15 23 42 / 45%); }
+}

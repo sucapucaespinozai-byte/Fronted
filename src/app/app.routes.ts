@@ -1,33 +1,130 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, permissionGuard } from './core/guards/guards';
-
-const servicioPage = () => import('./features/servicios/servicios.page').then(m => m.ServiciosPage);
-const vehiculoPage = () => import('./features/vehiculos/vehiculos.page').then(m => m.VehiculosPage);
-const ordenPage = () => import('./features/ordenes/ordenes.page').then(m => m.OrdenesPage);
+import { authGuard, invitadoGuard } from './core/guards/auth.guard';
+import { permisoGuard } from './core/guards/permiso.guard';
 
 export const routes: Routes = [
-  { path: 'login', canActivate: [guestGuard], loadComponent: () => import('./features/auth/login').then(m => m.LoginPage) },
   {
-    path: '', canActivate: [authGuard], loadComponent: () => import('./layout/main-layout').then(m => m.MainLayout),
+    path: 'login',
+    title: 'Iniciar sesión | PharmaSoft',
+    canActivate: [invitadoGuard],
+    loadComponent: () => import('./features/auth/login').then((module) => module.Login),
+  },
+  {
+    path: '',
+    loadComponent: () => import('./layout/main-layout').then((module) => module.MainLayout),
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', loadComponent: () => import('./shared/pages/pages').then(m => m.HomePage) },
-      { path: 'servicios', canActivate: [permissionGuard], data: { permission: 'SERVICIO_LEER' }, children: [
-        { path: '', pathMatch: 'full', loadComponent: servicioPage },
-        { path: 'nuevo', canActivate: [permissionGuard], data: { permission: 'SERVICIO_ESCRIBIR' }, loadComponent: servicioPage },
-        { path: ':id', canActivate: [permissionGuard], data: { permission: 'SERVICIO_ESCRIBIR' }, children: [{ path: 'editar', loadComponent: servicioPage }] },
-      ] },
-      { path: 'vehiculos', canActivate: [permissionGuard], data: { permission: 'VEHICULO_LEER' }, children: [
-        { path: '', pathMatch: 'full', loadComponent: vehiculoPage },
-        { path: 'nuevo', canActivate: [permissionGuard], data: { permission: 'VEHICULO_ESCRIBIR' }, loadComponent: vehiculoPage },
-        { path: ':id', canActivate: [permissionGuard], data: { permission: 'VEHICULO_ESCRIBIR' }, children: [{ path: 'editar', loadComponent: vehiculoPage }] },
-      ] },
-      { path: 'ordenes', canActivate: [permissionGuard], data: { permission: 'ORDEN_LEER' }, children: [
-        { path: '', pathMatch: 'full', loadComponent: ordenPage },
-        { path: 'nueva', canActivate: [permissionGuard], data: { permission: 'ORDEN_REGISTRAR' }, loadComponent: ordenPage },
-      ] },
-      { path: 'reportes', canActivate: [permissionGuard], data: { permission: 'REPORTE_VER' }, loadComponent: () => import('./features/reportes/reportes.page').then(m => m.ReportesPage) },
-      { path: 'acceso-denegado', loadComponent: () => import('./shared/pages/pages').then(m => m.DeniedPage) },
+      { path: '', pathMatch: 'full', redirectTo: 'categorias' },
+      {
+        path: 'inicio',
+        title: 'Inicio | PharmaSoft',
+        loadComponent: () => import('./features/inicio/inicio').then((module) => module.Inicio),
+      },
+      {
+        path: 'categorias',
+        canActivate: [permisoGuard],
+        data: { permiso: 'CATALOGO_LEER' },
+        children: [
+          {
+            path: '',
+            title: 'Categorías | PharmaSoft',
+            loadComponent: () =>
+              import('./features/categorias/categoria-list').then((module) => module.CategoriaList),
+          },
+          {
+            path: 'nuevo',
+            title: 'Nueva categoría | PharmaSoft',
+            canActivate: [permisoGuard],
+            data: { permiso: 'CATALOGO_ESCRIBIR' },
+            loadComponent: () =>
+              import('./features/categorias/categoria-form').then((module) => module.CategoriaForm),
+          },
+          {
+            path: ':id/editar',
+            title: 'Editar categoría | PharmaSoft',
+            canActivate: [permisoGuard],
+            data: { permiso: 'CATALOGO_ESCRIBIR' },
+            loadComponent: () =>
+              import('./features/categorias/categoria-form').then((module) => module.CategoriaForm),
+          },
+        ],
+      },
+      {
+        path: 'productos',
+        canActivate: [permisoGuard],
+        data: { permiso: 'CATALOGO_LEER' },
+        children: [
+          {
+            path: '',
+            title: 'Productos | PharmaSoft',
+            loadComponent: () =>
+              import('./features/productos/producto-list').then((module) => module.ProductoList),
+          },
+          {
+            path: 'nuevo',
+            title: 'Nuevo producto | PharmaSoft',
+            canActivate: [permisoGuard],
+            data: { permiso: 'CATALOGO_ESCRIBIR' },
+            loadComponent: () =>
+              import('./features/productos/producto-form').then((module) => module.ProductoForm),
+          },
+          {
+            path: ':id/editar',
+            title: 'Editar producto | PharmaSoft',
+            canActivate: [permisoGuard],
+            data: { permiso: 'CATALOGO_ESCRIBIR' },
+            loadComponent: () =>
+              import('./features/productos/producto-form').then((module) => module.ProductoForm),
+          },
+        ],
+      },
+      {
+        path: 'ventas',
+        canActivate: [permisoGuard],
+        data: { permiso: 'VENTAS_LEER' },
+        children: [
+          {
+            path: '',
+            title: 'Ventas | PharmaSoft',
+            loadComponent: () =>
+              import('./features/ventas/venta-list').then((module) => module.VentaList),
+          },
+          {
+            path: 'nueva',
+            title: 'Nueva venta | PharmaSoft',
+            canActivate: [permisoGuard],
+            data: { permiso: 'VENTAS_REGISTRAR' },
+            loadComponent: () =>
+              import('./features/ventas/venta-form').then((module) => module.VentaForm),
+          },
+          {
+            path: ':id',
+            title: 'Detalle de venta | PharmaSoft',
+            loadComponent: () =>
+              import('./features/ventas/venta-detail').then((module) => module.VentaDetail),
+          },
+        ],
+      },
+      {
+        path: 'cuenta',
+        title: 'Mi cuenta | PharmaSoft',
+        loadComponent: () => import('./features/cuenta/cuenta').then((module) => module.Cuenta),
+      },
+      {
+        path: 'acceso-denegado',
+        title: 'Acceso denegado | PharmaSoft',
+        loadComponent: () =>
+          import('./features/acceso-denegado/acceso-denegado').then(
+            (module) => module.AccesoDenegado,
+          ),
+      },
+      {
+        path: '**',
+        title: 'Página no encontrada | PharmaSoft',
+        loadComponent: () =>
+          import('./features/no-encontrado/no-encontrado').then((module) => module.NoEncontrado),
+      },
     ],
   },
-  { path: '**', loadComponent: () => import('./shared/pages/pages').then(m => m.NotFoundPage) },
 ];

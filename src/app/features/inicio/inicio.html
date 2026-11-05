@@ -1,0 +1,42 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">TU FARMACIA, AL DÍA</span>
+    <h1>Bienvenido, {{ auth.sesion()?.nombreCompleto }}</h1>
+    <p>Organiza el catálogo y acompaña cada venta desde un mismo lugar.</p>
+  </div>
+</header>
+<section class="welcome-card inicio-resumen" aria-labelledby="resumen-titulo">
+  <div class="welcome-card__text">
+    <span class="eyebrow">PANEL DE GESTIÓN</span>
+    <h2 id="resumen-titulo">Todo listo para atender mejor</h2>
+    <p>Consulta los productos disponibles, revisa sus categorías y lleva el seguimiento de las ventas de tu farmacia.</p>
+    <p>Antes de registrar una venta, confirma el producto, la cantidad y los datos del cliente.</p>
+  </div>
+  <nav class="welcome-card__actions" aria-label="Accesos rápidos">
+    @if (auth.tienePermiso('CATALOGO_LEER')) {
+      <a class="quick-link" routerLink="/productos"><span aria-hidden="true">◈</span><div><strong>Consultar productos</strong><small>Precios y existencias disponibles</small></div><b aria-hidden="true">→</b></a>
+      <a class="quick-link" routerLink="/categorias"><span aria-hidden="true">▤</span><div><strong>Explorar categorías</strong><small>Encuentra cada producto en su lugar</small></div><b aria-hidden="true">→</b></a>
+    }
+    @if (auth.tienePermiso('VENTAS_REGISTRAR')) {
+      <a class="quick-link" routerLink="/ventas/nueva"><span aria-hidden="true">+</span><div><strong>Registrar una venta</strong><small>Atiende al cliente y confirma su compra</small></div><b aria-hidden="true">→</b></a>
+    }
+    @if (auth.tienePermiso('VENTAS_LEER')) {
+      <a class="quick-link" routerLink="/ventas"><span aria-hidden="true">↗</span><div><strong>Revisar ventas</strong><small>Historial y detalle de operaciones</small></div><b aria-hidden="true">→</b></a>
+    }
+    <a class="quick-link" routerLink="/cuenta"><span aria-hidden="true">○</span><div><strong>Mi cuenta</strong><small>Información de tu sesión</small></div><b aria-hidden="true">→</b></a>
+  </nav>
+</section>
+
+@if (auth.tienePermiso('REPORTES_VER')) {
+  <div class="inicio-reporte" aria-live="polite">
+    @defer (on viewport) {
+      <app-mas-vendidos />
+    } @placeholder {
+      <section class="data-card reporte-placeholder"><h2>Productos más vendidos</h2><p>El resumen de ventas aparecerá aquí.</p></section>
+    } @loading (minimum 300ms) {
+      <section class="data-card loading-card" role="status">Cargando reporte…</section>
+    } @error {
+      <section class="alert" role="alert">No se pudo cargar el reporte. Recarga la página para volver a intentarlo.</section>
+    }
+  </div>
+}

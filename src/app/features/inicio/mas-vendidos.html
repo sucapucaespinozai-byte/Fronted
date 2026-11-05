@@ -1,0 +1,19 @@
+<section class="data-card" aria-labelledby="reporte-titulo">
+  <div class="data-card__toolbar"><strong id="reporte-titulo">Productos más vendidos</strong></div>
+  @if (cargando()) {
+    <p class="loading-card" role="status">Consultando ventas…</p>
+  } @else if (error(); as mensaje) {
+    <div class="alert" role="alert">{{ mensaje }} <button class="inline-link" type="button" (click)="cargar()">Reintentar</button></div>
+  } @else {
+    <div class="table-scroll"><table>
+      <thead><tr><th>PRODUCTO</th><th>CATEGORÍA</th><th>CANTIDAD</th><th>MONTO</th></tr></thead>
+      <tbody>
+        @for (fila of filas(); track fila.productoId) {
+          <tr><td class="item-name">{{ fila.productoNombre }}</td><td>{{ fila.categoriaNombre }}</td><td>{{ fila.cantidadVendida }}</td><td class="price-cell">{{ fila.montoTotal | currency:'PEN':'S/ ':'1.2-2' }}</td></tr>
+        } @empty {
+          <tr><td colspan="4">Aún no hay ventas registradas.</td></tr>
+        }
+      </tbody>
+    </table></div>
+  }
+</section>

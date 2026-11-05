@@ -1,0 +1,11 @@
+<section class="page-heading page-heading--compact">
+  <div><a routerLink="/ventas" class="back-link">← Ventas</a><h1>Detalle de venta</h1><p>Revisa los productos y los datos de la operación.</p></div>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
+@if (loading()) { <div class="loading-card">Cargando detalle de venta…</div> }
+@if (sale(); as current) {
+  <section class="detail-grid">
+    <article class="form-card detail-card"><span class="eyebrow">VENTA #{{ current.id }}</span><h2>Información de la venta</h2><dl class="detail-list"><div><dt>Fecha</dt><dd>{{ current.fecha | date:'dd/MM/yyyy, HH:mm' }}</dd></div><div><dt>Cliente</dt><dd>{{ current.clienteNombre }}</dd></div><div><dt>Estado</dt><dd><span class="badge">{{ current.estado }}</span></dd></div><div><dt>Total</dt><dd class="price-cell">{{ current.total | currency:'PEN':'symbol':'1.2-2' }}</dd></div></dl></article>
+    <article class="data-card"><div class="data-card__toolbar"><strong>Productos de la venta</strong><span class="result-count">{{ current.detalles.length }} productos</span></div><div class="table-scroll"><table><thead><tr><th>PRODUCTO</th><th>CANT.</th><th>PRECIO</th><th>SUBTOTAL</th></tr></thead><tbody>@for (line of current.detalles; track line.productoId) { <tr><td><strong class="item-name">{{ line.productoNombre }}</strong></td><td>{{ line.cantidad }}</td><td>{{ line.precio | currency:'PEN':'symbol':'1.2-2' }}</td><td class="price-cell">{{ line.subtotal | currency:'PEN':'symbol':'1.2-2' }}</td></tr> }</tbody></table></div></article>
+  </section>
+}

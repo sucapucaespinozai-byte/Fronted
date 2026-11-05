@@ -1,0 +1,17 @@
+<section class="page-heading page-heading--compact">
+  <div><a routerLink="/categorias" class="back-link">← Categorías</a><h1>{{ id ? 'Editar categoría' : 'Nueva categoría' }}</h1><p>{{ id ? 'Actualiza los datos de esta categoría.' : 'Completa la información para añadirla al catálogo.' }}</p></div>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
+@if (loading()) { <div class="loading-card">Cargando categoría…</div> }
+@else {
+  <form class="form-card" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="form-card__header"><span class="form-card__icon">▤</span><div><strong>Información de categoría</strong><p>Los campos marcados con * son obligatorios.</p></div></div>
+    <div class="form-fields">
+      <label for="category-name">Nombre <span>*</span></label><input id="category-name" class="field" formControlName="nombre" maxlength="100" placeholder="Ej. Cuidado personal">
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <small class="field-error">El nombre es obligatorio (máximo 100 caracteres).</small> }
+      <label for="category-description">Descripción</label><textarea id="category-description" class="field" formControlName="descripcion" maxlength="255" rows="3" placeholder="Describe brevemente esta categoría"></textarea>
+      <label class="check-field"><input type="checkbox" formControlName="activo"><span>La categoría está activa y disponible para el catálogo</span></label>
+    </div>
+    <div class="form-card__actions"><a class="button button--secondary" routerLink="/categorias">Cancelar</a><button class="button button--primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : id ? 'Guardar cambios' : 'Crear categoría' }}</button></div>
+  </form>
+}

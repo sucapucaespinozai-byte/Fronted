@@ -1,0 +1,17 @@
+<section class="page-heading">
+  <div><span class="eyebrow">INVENTARIO</span><h1>Productos</h1><p>Consulta y administra el inventario de tu farmacia.</p></div>
+  <a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/productos/nuevo">+ Nuevo producto</a>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }} <button type="button" class="inline-link" (click)="load()">Reintentar</button></div> }
+<section class="data-card">
+  <div class="data-card__toolbar"><div><strong>Inventario</strong><span class="result-count">{{ filtered().length }} productos</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Buscar producto…" [value]="search()" (input)="search.set($any($event.target).value)"></label></div>
+  @if (loading()) { <div class="loading-card">Cargando productos…</div> }
+  @else if (!filtered().length) { <div class="empty-state"><span>◈</span><strong>{{ search() ? 'No hay coincidencias' : 'Aún no hay productos' }}</strong><p>{{ search() ? 'Prueba con otro nombre o categoría.' : 'Registra los productos para empezar a gestionar el inventario.' }}</p><a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/productos/nuevo">Agregar producto</a></div> }
+  @else {
+    <div class="table-scroll"><table><thead><tr><th>PRODUCTO</th><th>CATEGORÍA</th><th>PRECIO</th><th>STOCK</th><th *appSiPermiso="'CATALOGO_ESCRIBIR'" class="actions-heading">ACCIONES</th></tr></thead><tbody>
+      @for (product of filtered(); track product.id) {
+        <tr><td><strong class="item-name">{{ product.nombre }}</strong><small class="item-subtitle">Código #{{ product.id }}</small></td><td><span class="category-chip">{{ product.categoria?.nombre || 'Sin categoría' }}</span></td><td class="price-cell">{{ product.precio | currency:'PEN':'symbol':'1.2-2' }}</td><td><span class="stock-badge" [class.stock-badge--low]="product.stock < 10">{{ product.stock }} un.</span></td><td *appSiPermiso="'CATALOGO_ESCRIBIR'" class="row-actions"><a class="text-action" [routerLink]="['/productos', product.id, 'editar']">Editar</a><button type="button" class="text-action text-action--danger" (click)="eliminar(product)">Dar de baja</button></td></tr>
+      }
+    </tbody></table></div>
+  }
+</section>

@@ -1,0 +1,20 @@
+<section class="page-heading page-heading--compact">
+  <div><a routerLink="/productos" class="back-link">← Productos</a><h1>{{ id ? 'Editar producto' : 'Nuevo producto' }}</h1><p>{{ id ? 'Actualiza los datos del inventario.' : 'Registra un producto en el inventario de la farmacia.' }}</p></div>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
+@if (loading()) { <div class="loading-card">Cargando producto…</div> }
+@else {
+  <form class="form-card" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="form-card__header"><span class="form-card__icon">◈</span><div><strong>Información de producto</strong><p>Completa los datos para mantener el inventario actualizado.</p></div></div>
+    <div class="form-fields form-fields--two">
+      <label for="product-name">Nombre del producto <span>*</span></label><input id="product-name" class="field form-fields__wide" formControlName="nombre" placeholder="Ej. Paracetamol 500 mg">
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <small class="field-error form-fields__wide">El nombre del producto es obligatorio.</small> }
+      <label for="product-price">Precio (S/) <span>*</span></label><label for="product-stock">Stock <span>*</span></label>
+      <input id="product-price" class="field" type="number" min="0.01" step="0.01" formControlName="precio" placeholder="0.00"><input id="product-stock" class="field" type="number" min="0" step="1" formControlName="stock" placeholder="0">
+      <label for="product-category">Categoría <span>*</span></label><span></span>
+      <select id="product-category" class="field form-fields__wide" formControlName="categoriaId"><option value="">Selecciona una categoría</option>@for (category of categories(); track category.id) { <option [value]="category.id">{{ category.nombre }}</option> }</select>
+      @if (form.controls.categoriaId.touched && form.controls.categoriaId.invalid) { <small class="field-error form-fields__wide">Selecciona una categoría activa.</small> }
+    </div>
+    <div class="form-card__actions"><a class="button button--secondary" routerLink="/productos">Cancelar</a><button class="button button--primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : id ? 'Guardar cambios' : 'Crear producto' }}</button></div>
+  </form>
+}

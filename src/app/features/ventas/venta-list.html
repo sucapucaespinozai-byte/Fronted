@@ -1,0 +1,23 @@
+<section class="page-heading">
+  <div><span class="eyebrow">OPERACIONES</span><h1>Ventas</h1><p>Consulta y da seguimiento a las ventas de tu farmacia.</p></div>
+  <a *appSiPermiso="'VENTAS_REGISTRAR'" class="button button--primary" routerLink="/ventas/nueva">+ Nueva venta</a>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }} <button type="button" class="inline-link" (click)="buscar()">Reintentar</button></div> }
+<form class="filter-card" [formGroup]="form" (ngSubmit)="buscar()">
+  <label>Desde<input class="field" type="date" formControlName="desde"></label>
+  <label>Hasta<input class="field" type="date" formControlName="hasta"></label>
+  <label>Estado<select class="field" formControlName="estado"><option value="">Todos</option><option value="COMPLETADA">Completada</option><option value="PENDIENTE">Pendiente</option><option value="ANULADA">Anulada</option></select></label>
+  <div class="filter-actions"><button class="button button--dark" type="submit">Filtrar</button><button class="button button--secondary" type="button" (click)="limpiar()">Limpiar</button></div>
+</form>
+<section class="data-card">
+  <div class="data-card__toolbar"><div><strong>Registro de ventas</strong><span class="result-count">{{ sales().length }} operaciones</span></div></div>
+  @if (loading()) { <div class="loading-card">Cargando ventas…</div> }
+  @else if (!sales().length) { <div class="empty-state"><span>↗</span><strong>No se encontraron ventas</strong><p>Prueba con otro filtro o registra una nueva venta.</p><a *appSiPermiso="'VENTAS_REGISTRAR'" class="button button--primary" routerLink="/ventas/nueva">Registrar venta</a></div> }
+  @else {
+    <div class="table-scroll"><table><thead><tr><th>N.° VENTA</th><th>FECHA</th><th>CLIENTE</th><th>ESTADO</th><th>TOTAL</th><th></th></tr></thead><tbody>
+      @for (sale of sales(); track sale.id) {
+        <tr><td><strong class="item-name">#{{ sale.id }}</strong><small class="item-subtitle">{{ sale.detalles.length }} productos</small></td><td>{{ sale.fecha | date:'dd/MM/yyyy, HH:mm' }}</td><td>{{ sale.clienteNombre }}</td><td><span class="badge" [class.badge--muted]="sale.estado !== 'COMPLETADA'">{{ sale.estado }}</span></td><td class="price-cell">{{ sale.total | currency:'PEN':'symbol':'1.2-2' }}</td><td><a class="text-action" [routerLink]="['/ventas', sale.id]">Ver detalle →</a></td></tr>
+      }
+    </tbody></table></div>
+  }
+</section>

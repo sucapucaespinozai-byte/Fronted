@@ -1,0 +1,41 @@
+<div class="app-shell">
+  <aside class="sidebar" [class.sidebar--open]="menuOpen()">
+    <a class="brand" routerLink="/categorias" (click)="menuOpen.set(false)">
+      <span class="brand__mark" aria-hidden="true">+</span>
+      <span>pharma<span class="brand__soft">soft</span><small>GESTIÓN DE FARMACIA</small></span>
+    </a>
+    <span class="sidebar__caption">MENÚ PRINCIPAL</span>
+    <nav class="navigation" aria-label="Menú principal">
+      @for (item of menu(); track item.route) {
+        <a class="navigation__link" [routerLink]="item.route" routerLinkActive="navigation__link--active"
+           (click)="menuOpen.set(false)">
+          <span class="navigation__icon" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <button class="mobile-menu" type="button" aria-label="Abrir menú" (click)="menuOpen.update(open => !open)">☰</button>
+      <div class="topbar__breadcrumbs"><span>PharmaSoft</span><span aria-hidden="true">/</span><strong>Panel de gestión</strong></div>
+
+      @if (auth.sesion(); as session) {
+        <div style="display: flex; align-items: center; gap: 16px; margin-left: auto;">
+          <div style="text-align: right; line-height: 1.2;">
+            <div style="color: #0f172a; font-size: 13px; font-weight: 700;">{{ session.nombreCompleto }}</div>
+            <div style="color: #64748b; font-size: 10px; font-weight: 600;">{{ session.roles.join(', ').toUpperCase() }}</div>
+          </div>
+          <button type="button" (click)="salir()" style="background: transparent; border: 1px solid #cbd5e1; color: #1e293b; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+            Cerrar sesión
+          </button>
+        </div>
+      }
+    </header>
+    <main class="page-content"><router-outlet /></main>
+    <footer class="footer">PharmaSoft <span>·</span> Gestión segura de farmacia</footer>
+  </div>
+</div>
+@if (menuOpen()) {
+  <button class="mobile-overlay" type="button" aria-label="Cerrar menú" (click)="menuOpen.set(false)"></button>
+}

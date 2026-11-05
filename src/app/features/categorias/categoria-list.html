@@ -1,0 +1,17 @@
+<section class="page-heading">
+  <div><span class="eyebrow">CATÁLOGO</span><h1>Categorías</h1><p>Organiza los productos de tu farmacia.</p></div>
+  <a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/categorias/nuevo">+ Nueva categoría</a>
+</section>
+@if (error()) { <div class="alert" role="alert">{{ error() }} <button type="button" class="inline-link" (click)="load()">Reintentar</button></div> }
+<section class="data-card">
+  <div class="data-card__toolbar"><div><strong>Listado de categorías</strong><span class="result-count">{{ filtered().length }} registros</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Buscar categoría…" [value]="search()" (input)="search.set($any($event.target).value)"></label></div>
+  @if (loading()) { <div class="loading-card">Cargando categorías…</div> }
+  @else if (filtered().length === 0) { <div class="empty-state"><span>▤</span><strong>{{ search() ? 'No se encontraron categorías' : 'Aún no hay categorías' }}</strong><p>{{ search() ? 'Prueba con otro término de búsqueda.' : 'Crea una categoría para organizar tu catálogo.' }}</p><a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/categorias/nuevo">Crear primera categoría</a></div> }
+  @else {
+    <div class="table-scroll"><table><thead><tr><th>CATEGORÍA</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th *appSiPermiso="'CATALOGO_ESCRIBIR'" class="actions-heading">ACCIONES</th></tr></thead><tbody>
+      @for (category of filtered(); track category.id) {
+        <tr><td><strong class="item-name">{{ category.nombre }}</strong><small class="item-subtitle">#{{ category.id }}</small></td><td>{{ category.descripcion || '—' }}</td><td><span class="badge" [class.badge--muted]="category.activo !== 1">{{ category.activo === 1 ? 'Activa' : 'Inactiva' }}</span></td><td *appSiPermiso="'CATALOGO_ESCRIBIR'" class="row-actions"><a class="text-action" [routerLink]="['/categorias', category.id, 'editar']">Editar</a><button type="button" class="text-action text-action--danger" (click)="eliminar(category)">Eliminar</button></td></tr>
+      }
+    </tbody></table></div>
+  }
+</section>
