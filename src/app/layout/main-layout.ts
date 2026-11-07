@@ -1,10 +1,9 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/auth/auth.service';
 
 @Component({
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
 })
