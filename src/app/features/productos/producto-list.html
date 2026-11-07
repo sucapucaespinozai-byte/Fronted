@@ -1,5 +1,5 @@
 <section class="page-heading">
-  <div><span class="eyebrow">INVENTARIO</span><h1>Productos</h1><p>Consulta y administra el inventario de tu farmacia.</p></div>
+  <div><span class="eyebrow">INVENTARIO</span><h1>Productos</h1><p>Consulta precios y existencias actualizadas de tu farmacia.</p></div>
   <a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/productos/nuevo">+ Nuevo producto</a>
 </section>
 @if (error()) { <div class="alert" role="alert">{{ error() }} <button type="button" class="inline-link" (click)="load()">Reintentar</button></div> }
