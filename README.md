@@ -21,7 +21,7 @@ Aplicación SPA para administrar una farmacia, creada con Angular 22 y conectada
 
 Desarrollo usa `src/environments/environment.development.ts` (`http://localhost:8080/api/v1`); producción usa `src/environments/environment.ts` (`/api/v1`). El backend de este proyecto ya permite el origen `http://localhost:4200`; si el origen cambia, configura CORS en el backend por separado. Esta SPA no ejecuta SQL, migraciones ni operaciones en DBeaver.
 
-Ver [la preparación de producción y las evidencias de sesión 13](docs/sesion13-produccion.md).
+La preparación de producción se describe en este README. Los informes y las capturas se entregan por separado.
 
 ## Funcionalidades
 
@@ -53,8 +53,8 @@ docker compose -f deploy/docker-compose.yml up -d
 Abrir http://localhost:8081/login con el backend de farmacia en 8080. El entorno
 production usa /api/v1; development utiliza localhost:8080/api/v1. Las variables
 secretas de la tabla siguiente pertenecen al backend y nunca se incrustan en la SPA.
-Para la variante experimental: npm run build:preload. No desplegar esa variante
-sin revisar las mediciones; la configuración habitual conserva NoPreloading.
+La aplicación conserva NoPreloading. Las herramientas del experimento comparativo
+se entregan aparte y no forman parte del programa.
 
 Para desplegar sin detener Nginx, construir en otra carpeta, copiar primero los
 assets con hash y reemplazar index.html al final. Mantener assets anteriores por
@@ -161,4 +161,6 @@ En un servidor usa un gestor de procesos y la configuración de su propio entorn
 
 ## Actividad autónoma S13
 
-Informe y mediciones en el repositorio Pharma-Backend: docs/informe-s13.pdf y docs/evidencias-s13. La web mantiene sus pantallas de negocio; el informe se entrega por separado.
+El informe, las capturas para la presentación y las herramientas de medición se
+entregan por separado. El proyecto conserva el código de la aplicación y sus
+mejoras, sin informes PDF ni capturas académicas dentro de sus carpetas.

@@ -80,14 +80,6 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
-            },
-            "preload": {
-              "fileReplacements": [
-                {
-                  "replace": "src/app/core/config/preloading.ts",
-                  "with": "src/app/core/config/preloading.experiment.ts"
-                }
-              ]
             }
           },
           "defaultConfiguration": "production"
