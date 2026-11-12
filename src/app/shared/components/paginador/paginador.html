@@ -10,7 +10,7 @@
       (change)="cambioTamanio.emit(+$any($event.target).value)"
     >
       @for (t of [10, 20, 50, 100]; track t) {
-        <option [value]="t">{{ t }}</option>
+        <option [value]="t" [selected]="t === tamanio()">{{ t }}</option>
       }
     </select></label
   >

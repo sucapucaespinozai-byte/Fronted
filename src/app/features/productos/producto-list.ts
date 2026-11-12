@@ -56,7 +56,7 @@ export class ProductoList {
     });
   }
   eliminar(p: Producto) {
-    if (!confirm(`Ã‚Â¿Dar de baja el producto "${p.nombre}"?`)) return;
+    if (!confirm(`¿Dar de baja el producto "${p.nombre}"?`)) return;
     this.api
       .eliminarProducto(p.id)
       .subscribe({ next: () => this.productos.reload(), error: (e) => alert(mensajeError(e)) });

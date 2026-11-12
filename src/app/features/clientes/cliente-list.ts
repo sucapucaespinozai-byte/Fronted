@@ -44,7 +44,7 @@ export class ClienteList {
   guardar() {
     if (this.form.invalid || this.guardando()) {
       this.form.markAllAsTouched();
-      this.error.set('Completa los datos requeridos. El DNI debe tener 8 dÃƒÂ­gitos.');
+      this.error.set('Completa los datos requeridos. El DNI debe tener 8 dígitos.');
       return;
     }
     this.guardando.set(true);

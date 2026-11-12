@@ -11,7 +11,7 @@
 @if (error()) {
   <div class="alert" role="alert">{{ error() }}</div>
 }
-<form (ngSubmit)="guardar()">
+<form (submit)="$event.preventDefault(); guardar()">
   <section class="form-card sale-section">
     <h2>Cliente</h2>
     <a class="text-action" routerLink="/clientes">Registrar o consultar clientes</a
