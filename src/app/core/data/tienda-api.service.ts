@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { EMPTY, expand, Observable, reduce } from 'rxjs';
+import { Observable } from 'rxjs';
+import { Pagina, ConsultaPagina } from '../models/pagina';
 import { environment } from '../../../environments/environment';
 import {
   Categoria,
@@ -11,12 +12,6 @@ import {
   Venta,
   VentaRequest,
 } from './tienda.model';
-
-interface Pagina<T> {
-  content: T[];
-  number: number;
-  last: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class TiendaApiService {
@@ -43,8 +38,8 @@ export class TiendaApiService {
     return this.http.delete<void>(`${this.baseUrl}/categorias/${id}`);
   }
 
-  listarProductos(): Observable<Producto[]> {
-    return this.listarPaginas<Producto>('productos');
+  listarProductos(c: ConsultaPagina): Observable<Pagina<Producto>> {
+    return this.http.get<Pagina<Producto>>(`${this.baseUrl}/productos`, { params: { ...c } });
   }
 
   obtenerProducto(id: number): Observable<Producto> {
@@ -63,48 +58,25 @@ export class TiendaApiService {
     return this.http.delete<void>(`${this.baseUrl}/productos/${id}`);
   }
 
-  listarClientes(): Observable<Cliente[]> {
-    return this.listarPaginas<Cliente>('clientes');
+  listarClientes(c: ConsultaPagina): Observable<Pagina<Cliente>> {
+    return this.http.get<Pagina<Cliente>>(`${this.baseUrl}/clientes`, { params: { ...c } });
   }
-
-  private listarPaginas<T>(recurso: string): Observable<T[]> {
-    const cargarPagina = (pagina: number) => this.http.get<Pagina<T>>(
-      `${this.baseUrl}/${recurso}`,
-      { params: { pagina, tamanio: 100, ordenarPor: 'id', direccion: 'asc' } },
-    );
-    // Los selectores y listados existentes consumen el conjunto de páginas como arreglo.
-    return cargarPagina(0).pipe(
-      expand((pagina) => pagina.last ? EMPTY : cargarPagina(pagina.number + 1)),
-      reduce((filas, pagina) => [...filas, ...pagina.content], [] as T[]),
-    );
+  crearCliente(c: Omit<Cliente, 'id' | 'creadoPor' | 'modificadoPor'>): Observable<Cliente> {
+    return this.http.post<Cliente>(`${this.baseUrl}/clientes`, c);
   }
-
-  listarVentas(): Observable<Venta[]> {
-    return this.http.get<Venta[]>(`${this.baseUrl}/ventas`);
+  buscarAuditoria(c: Record<string, string | number>): Observable<Pagina<Auditoria>> {
+    return this.http.get<Pagina<Auditoria>>(`${this.baseUrl}/auditoria`, { params: c });
   }
-
   obtenerVenta(id: number): Observable<Venta> {
     return this.http.get<Venta>(`${this.baseUrl}/ventas/${id}`);
   }
 
-  buscarVentas(filters: {
-    desde?: string;
-    hasta?: string;
-    estado?: string;
-  }): Observable<Venta[]> {
-    let params = new HttpParams()
-      .set('ordenarPor', 'fecha')
-      .set('direccion', 'desc');
-    if (filters.desde) {
-      params = params.set('desde', filters.desde);
+  buscarVentas(filters: Record<string, string | number>): Observable<Pagina<Venta>> {
+    let params = new HttpParams();
+    for (const [k, v] of Object.entries(filters)) {
+      if (v !== '' && v != null) params = params.set(k, v);
     }
-    if (filters.hasta) {
-      params = params.set('hasta', filters.hasta);
-    }
-    if (filters.estado) {
-      params = params.set('estado', filters.estado);
-    }
-    return this.http.get<Venta[]>(`${this.baseUrl}/ventas/buscar`, { params });
+    return this.http.get<Pagina<Venta>>(`${this.baseUrl}/ventas/buscar`, { params });
   }
 
   crearVenta(sale: VentaRequest): Observable<Venta> {
@@ -117,4 +89,15 @@ export class TiendaApiService {
       passwordNueva,
     });
   }
+}
+
+export interface Auditoria {
+  id: number;
+  fecha: string;
+  usuario: string;
+  accion: string;
+  entidad: string;
+  entidadId: number | null;
+  detalle: string | null;
+  requestId: string | null;
 }

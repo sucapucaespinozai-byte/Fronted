@@ -1,113 +1,131 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, effect } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { Cliente, DetalleVentaRequest, Producto } from '../../core/data/tienda.model';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Cliente, Producto, DetalleVentaRequest } from '../../core/data/tienda.model';
 import { TiendaApiService } from '../../core/data/tienda-api.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { mensajeError } from '../../core/utils/http-error';
-
 interface SaleLine {
-  productId: number | null;
+  product: Producto;
   quantity: number;
 }
-
 @Component({
   imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './venta-form.html',
 })
 export class VentaForm {
-  private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(TiendaApiService);
   private readonly router = inject(Router);
-  protected readonly clients = signal<Cliente[]>([]);
-  protected readonly products = signal<Producto[]>([]);
-  protected readonly lines = signal<SaleLine[]>([{ productId: null, quantity: 1 }]);
-  protected readonly loading = signal(true);
+  private readonly auth = inject(AuthService);
+  private readonly draftKey = 'pharmasoft.venta.borrador.' + (this.auth.sesion()?.username ?? '');
+  protected readonly cliente = signal<Cliente | null>(null);
+  protected readonly lines = signal<SaleLine[]>([]);
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly form = this.fb.group({ clienteId: ['', Validators.required] });
+  protected readonly textoCliente = signal('');
+  protected readonly textoProducto = signal('');
+  private readonly buscarCliente = new Subject<string>();
+  private readonly buscarProducto = new Subject<string>();
+  protected readonly clientes = rxResource({
+    params: () => ({
+      pagina: 0,
+      tamanio: 20,
+      ordenarPor: 'apellidos',
+      direccion: 'asc',
+      buscar: this.textoCliente(),
+    }),
+    stream: ({ params }) => this.api.listarClientes(params),
+  });
+  protected readonly productos = rxResource({
+    params: () => ({
+      pagina: 0,
+      tamanio: 20,
+      ordenarPor: 'nombre',
+      direccion: 'asc',
+      buscar: this.textoProducto(),
+      disponibles: true,
+    }),
+    stream: ({ params }) => this.api.listarProductos(params),
+  });
   protected readonly total = computed(() =>
-    this.lines().reduce((sum, line) => {
-      const product = this.products().find((item) => item.id === line.productId);
-      return sum + (product ? Number(product.precio) * line.quantity : 0);
-    }, 0),
+    this.lines().reduce((n, l) => n + Number(l.product.precio) * l.quantity, 0),
   );
-
+  protected readonly mensajeError = mensajeError;
   constructor() {
-    forkJoin({
-      clients: this.api.listarClientes(),
-      products: this.api.listarProductos(),
-    }).subscribe({
-      next: ({ clients, products }) => {
-        this.clients.set(clients.filter((client) => client.estado));
-        this.products.set(products);
-        this.loading.set(false);
-      },
-      error: (failure: unknown) => {
-        this.error.set(mensajeError(failure));
-        this.loading.set(false);
-      },
-    });
-  }
-
-  agregarLinea(): void {
-    this.lines.update((lines) => [...lines, { productId: null, quantity: 1 }]);
-  }
-
-  quitarLinea(index: number): void {
-    this.lines.update((lines) => lines.filter((_line, current) => current !== index));
-  }
-
-  seleccionarProducto(index: number, event: Event): void {
-    const productId = Number((event.target as HTMLSelectElement).value) || null;
-    this.lines.update((lines) => lines.map((line, current) =>
-      current === index ? { ...line, productId } : line));
-  }
-
-  cambiarCantidad(index: number, event: Event): void {
-    const quantity = Number((event.target as HTMLInputElement).value);
-    this.lines.update((lines) => lines.map((line, current) =>
-      current === index ? { ...line, quantity } : line));
-  }
-
-  guardar(): void {
-    const lines = this.lines();
-    if (this.form.invalid || !lines.length || lines.some((line) => !line.productId || !Number.isInteger(line.quantity) || line.quantity < 1)) {
-      this.form.markAllAsTouched();
-      this.error.set('Selecciona un cliente y al menos un producto con una cantidad válida.');
-      return;
-    }
-
-    const grouped = new Map<number, number>();
-    for (const line of lines) {
-      if (line.productId === null) {
-        this.error.set('Selecciona un producto para cada detalle de la venta.');
-        return;
+    try {
+      const d = JSON.parse(sessionStorage.getItem(this.draftKey) || 'null');
+      if (d) {
+        this.cliente.set(d.cliente);
+        this.lines.set(d.lines || []);
       }
-      grouped.set(line.productId, (grouped.get(line.productId) ?? 0) + line.quantity);
+    } catch {
+      sessionStorage.removeItem(this.draftKey);
     }
-    const details: DetalleVentaRequest[] = Array.from(grouped, ([productoId, cantidad]) => ({ productoId, cantidad }));
-    const insufficientStock = details.find((detail) => {
-      const product = this.products().find((item) => item.id === detail.productoId);
-      return !product || detail.cantidad > product.stock;
+    this.buscarCliente
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((t) => this.textoCliente.set(t));
+    this.buscarProducto
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((t) => this.textoProducto.set(t));
+    effect(() =>
+      sessionStorage.setItem(
+        this.draftKey,
+        JSON.stringify({ cliente: this.cliente(), lines: this.lines() }),
+      ),
+    );
+  }
+  filtrarCliente(t: string) {
+    this.buscarCliente.next(t);
+  }
+  filtrarProducto(t: string) {
+    this.buscarProducto.next(t);
+  }
+  agregar(p: Producto) {
+    this.lines.update((ls) => {
+      let l = ls.find((l) => l.product.id === p.id);
+      return l
+        ? ls.map((x) => (x === l ? { product: p, quantity: x.quantity + 1 } : x))
+        : [...ls, { product: p, quantity: 1 }];
     });
-    if (insufficientStock) {
-      const product = this.products().find((item) => item.id === insufficientStock.productoId);
-      this.error.set(`No hay stock suficiente para ${product?.nombre ?? 'el producto seleccionado'}.`);
+  }
+  cantidad(i: number, v: string) {
+    this.lines.update((ls) => ls.map((l, n) => (n === i ? { ...l, quantity: Number(v) } : l)));
+  }
+  quitar(i: number) {
+    this.lines.update((ls) => ls.filter((_, n) => n !== i));
+  }
+  guardar() {
+    if (this.saving()) return;
+    if (
+      !this.cliente() ||
+      !this.lines().length ||
+      this.lines().some(
+        (l) => !Number.isInteger(l.quantity) || l.quantity < 1 || l.quantity > l.product.stock,
+      )
+    ) {
+      this.error.set(
+        'Selecciona un cliente y productos con cantidades válidas y stock suficiente.',
+      );
       return;
     }
-
     this.saving.set(true);
     this.error.set(null);
-    this.api.crearVenta({
-      clienteId: Number(this.form.controls.clienteId.value),
-      detalles: details,
-    }).subscribe({
-      next: (sale) => void this.router.navigate(['/ventas', sale.id]),
-      error: (failure: unknown) => {
-        this.error.set(mensajeError(failure));
+    const detalles: DetalleVentaRequest[] = this.lines().map((l) => ({
+      productoId: l.product.id,
+      cantidad: l.quantity,
+    }));
+    this.api.crearVenta({ clienteId: this.cliente()!.id, detalles }).subscribe({
+      next: (s) => {
+        sessionStorage.removeItem(this.draftKey);
+        void this.router.navigate(['/ventas', s.id], { queryParams: { registrada: 1 } });
+      },
+      error: (e) => {
+        this.error.set(mensajeError(e));
         this.saving.set(false);
+        this.productos.reload();
       },
     });
   }

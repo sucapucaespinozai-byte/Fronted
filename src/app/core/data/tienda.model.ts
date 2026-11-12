@@ -1,4 +1,7 @@
 export interface Categoria {
+  creadoPor?: string;
+  modificadoPor?: string;
+
   id: number;
   nombre: string;
   descripcion: string | null;
@@ -13,6 +16,10 @@ export interface CategoriaRequest {
 }
 
 export interface Producto {
+  estado: boolean;
+  creadoPor?: string;
+  modificadoPor?: string;
+
   id: number;
   nombre: string;
   precio: number;
@@ -28,6 +35,9 @@ export interface ProductoRequest {
 }
 
 export interface Cliente {
+  creadoPor?: string;
+  modificadoPor?: string;
+
   id: number;
   dni: string;
   nombres: string;
@@ -57,6 +67,8 @@ export interface DetalleVenta {
 }
 
 export interface Venta {
+  creadoPor?: string;
+
   id: number;
   fecha: string;
   clienteId: number;

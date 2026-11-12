@@ -1,17 +1,94 @@
 <section class="page-heading">
-  <div><span class="eyebrow">INVENTARIO</span><h1>Productos</h1><p>Consulta precios y existencias actualizadas de tu farmacia.</p></div>
-  <a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/productos/nuevo">+ Nuevo producto</a>
+  <div>
+    <span class="eyebrow">INVENTARIO</span>
+    <h1>Productos</h1>
+    <p>Consulta precios y existencias actualizadas de tu farmacia.</p>
+  </div>
+  <a
+    *appSiPermiso="'CATALOGO_ESCRIBIR'"
+    class="button button--primary"
+    routerLink="/productos/nuevo"
+    >+ Nuevo producto</a
+  >
 </section>
-@if (error()) { <div class="alert" role="alert">{{ error() }} <button type="button" class="inline-link" (click)="load()">Reintentar</button></div> }
-<section class="data-card">
-  <div class="data-card__toolbar"><div><strong>Inventario</strong><span class="result-count">{{ filtered().length }} productos</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Buscar producto…" [value]="search()" (input)="search.set($any($event.target).value)"></label></div>
-  @if (loading()) { <div class="loading-card">Cargando productos…</div> }
-  @else if (!filtered().length) { <div class="empty-state"><span>◈</span><strong>{{ search() ? 'No hay coincidencias' : 'Aún no hay productos' }}</strong><p>{{ search() ? 'Prueba con otro nombre o categoría.' : 'Registra los productos para empezar a gestionar el inventario.' }}</p><a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="button button--primary" routerLink="/productos/nuevo">Agregar producto</a></div> }
-  @else {
-    <div class="table-scroll"><table><thead><tr><th>PRODUCTO</th><th>CATEGORÍA</th><th>PRECIO</th><th>STOCK</th><th *appSiPermiso="'CATALOGO_ESCRIBIR'" class="actions-heading">ACCIONES</th></tr></thead><tbody>
-      @for (product of filtered(); track product.id) {
-        <tr><td><strong class="item-name">{{ product.nombre }}</strong><small class="item-subtitle">Código #{{ product.id }}</small></td><td><span class="category-chip">{{ product.categoria?.nombre || 'Sin categoría' }}</span></td><td class="price-cell">{{ product.precio | currency:'PEN':'symbol':'1.2-2' }}</td><td><span class="stock-badge" [class.stock-badge--low]="product.stock < 10">{{ product.stock }} un.</span></td><td *appSiPermiso="'CATALOGO_ESCRIBIR'" class="row-actions"><a class="text-action" [routerLink]="['/productos', product.id, 'editar']">Editar</a><button type="button" class="text-action text-action--danger" (click)="eliminar(product)">Dar de baja</button></td></tr>
-      }
-    </tbody></table></div>
+@if (productos.error()) {
+  <div class="alert" role="alert">
+    {{ mensajeError(productos.error()) }}
+    <button type="button" (click)="productos.reload()">Reintentar</button>
+  </div>
+}
+<section class="data-card" [attr.aria-busy]="productos.isLoading()">
+  <div class="data-card__toolbar">
+    <strong>Inventario</strong
+    ><label class="search-box"
+      ><input
+        type="search"
+        aria-label="Buscar producto"
+        placeholder="Buscar nombre o categoría…"
+        [value]="buscar()"
+        (input)="filtro.next($any($event.target).value)"
+    /></label>
+  </div>
+  @if (productos.isLoading()) {
+    <p role="status">Cargando productos…</p>
+  }
+  @if (pag(); as p) {
+    <div class="table-scroll">
+      <table data-testid="tabla-productos">
+        <thead>
+          <tr>
+            <th>
+              <button class="inline-link" (click)="ordenarPor('nombre')">
+                PRODUCTO {{ orden() === 'nombre' ? (dir() === 'asc' ? '↑' : '↓') : '' }}
+              </button>
+            </th>
+            <th>CATEGORÍA</th>
+            <th><button class="inline-link" (click)="ordenarPor('precio')">PRECIO</button></th>
+            <th><button class="inline-link" (click)="ordenarPor('stock')">STOCK</button></th>
+            <th>RESPONSABLE</th>
+            <th *appSiPermiso="'CATALOGO_ESCRIBIR'">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of p.content; track product.id) {
+            <tr [attr.data-producto-id]="product.id">
+              <td>
+                <strong class="item-name">{{ product.nombre }}</strong
+                ><small class="item-subtitle"
+                  >Código #{{ product.id }} · {{ product.estado ? 'Activo' : 'Inactivo' }}</small
+                >
+              </td>
+              <td>{{ product.categoria?.nombre }}</td>
+              <td>{{ product.precio | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td data-testid="stock">{{ product.stock }} un.</td>
+              <td>
+                <small
+                  >Creado por {{ product.creadoPor || 'Sin registro anterior' }}<br />Modificado por
+                  {{ product.modificadoPor || 'Sin cambios' }}</small
+                >
+              </td>
+              <td *appSiPermiso="'CATALOGO_ESCRIBIR'" class="row-actions">
+                <a [routerLink]="['/productos', product.id, 'editar']">Editar</a
+                ><button type="button" (click)="eliminar(product)" [disabled]="!product.estado">
+                  Dar de baja
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No se encontraron productos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador
+      [pagina]="p.number"
+      [totalPaginas]="p.totalPages"
+      [totalElementos]="p.totalElements"
+      [tamanio]="p.size"
+      (cambioPagina)="navegar({ pagina: $event })"
+      (cambioTamanio)="navegar({ tamanio: $event, pagina: 0 })"
+    />
   }
 </section>

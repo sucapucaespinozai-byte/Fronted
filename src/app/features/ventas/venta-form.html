@@ -1,37 +1,119 @@
-<section class="page-heading page-heading--compact">
-  <div><a routerLink="/ventas" class="back-link">← Ventas</a><h1>Nueva venta</h1><p>Selecciona al cliente y los productos de esta operación.</p></div>
+<section class="page-heading">
+  <div>
+    <a routerLink="/ventas">← Ventas</a>
+    <h1>Nueva venta</h1>
+    <p>
+      Busca el cliente y añade productos disponibles. El servidor confirma el precio y el stock al
+      registrar.
+    </p>
+  </div>
 </section>
-@if (error()) { <div class="alert" role="alert">{{ error() }}</div> }
-@if (loading()) { <div class="loading-card">Cargando clientes y productos…</div> }
-@else {
-  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
-    <section class="form-card sale-section">
-      <div class="form-card__header"><span class="form-card__icon">◎</span><div><strong>Cliente</strong><p>La venta se registrará a nombre del cliente seleccionado.</p></div></div>
-      @if (clients().length) {
-        <label class="form-label" for="sale-client">Cliente <span>*</span></label>
-        <select id="sale-client" class="field field--select" formControlName="clienteId"><option value="">Selecciona un cliente</option>@for (client of clients(); track client.id) { <option [value]="client.id">{{ client.nombres }} {{ client.apellidos }} · {{ client.dni }}</option> }</select>
-      } @else {
-        <div class="notice" role="status">No hay clientes activos disponibles. Verifica que existan clientes en el backend.</div>
-      }
-    </section>
-
-    <section class="form-card sale-section">
-      <div class="form-card__header"><span class="form-card__icon">◈</span><div><strong>Productos</strong><p>El precio se toma del inventario; no se modifica el stock desde el formulario.</p></div></div>
-      @if (!products().length) { <div class="notice" role="status">No hay productos disponibles en el inventario.</div> }
-      @else {
-        <div class="sale-lines">
-          @for (line of lines(); track $index; let index = $index) {
-            <div class="sale-line">
-              <label class="sale-line__product"><span>Producto</span><select class="field field--select" [value]="line.productId ?? ''" (change)="seleccionarProducto(index, $event)"><option value="">Selecciona un producto</option>@for (product of products(); track product.id) { <option [value]="product.id" [disabled]="product.stock < 1">{{ product.nombre }} · {{ product.precio | currency:'PEN':'symbol':'1.2-2' }} · {{ product.stock }} un.</option> }</select></label>
-              <label class="sale-line__quantity"><span>Cantidad</span><input class="field" type="number" min="1" step="1" [value]="line.quantity" (input)="cambiarCantidad(index, $event)"></label>
-              <button class="icon-button icon-button--remove" type="button" aria-label="Eliminar producto" [disabled]="lines().length === 1" (click)="quitarLinea(index)">×</button>
-            </div>
-          }
-        </div>
-        <button type="button" class="button button--secondary add-line" (click)="agregarLinea()">+ Agregar producto</button>
-      }
-      <div class="sale-total"><span>Total de la venta</span><strong>{{ total() | currency:'PEN':'symbol':'1.2-2' }}</strong></div>
-    </section>
-    <div class="form-card__actions form-card__actions--outside"><a class="button button--secondary" routerLink="/ventas">Cancelar</a><button class="button button--primary" type="submit" [disabled]="saving() || !products().length || !clients().length">{{ saving() ? 'Registrando…' : 'Registrar venta' }}</button></div>
-  </form>
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
 }
+<form (ngSubmit)="guardar()">
+  <section class="form-card sale-section">
+    <h2>Cliente</h2>
+    <a class="text-action" routerLink="/clientes">Registrar o consultar clientes</a
+    ><label class="form-label"
+      >Buscar cliente<input
+        class="field"
+        type="search"
+        data-testid="buscar-cliente"
+        placeholder="Nombre, apellido o DNI"
+        (input)="filtrarCliente($any($event.target).value)"
+    /></label>
+    @if (cliente(); as c) {
+      <p role="status">
+        Cliente seleccionado: <strong>{{ c.nombres }} {{ c.apellidos }}</strong>
+      </p>
+    }
+    @if (clientes.error()) {
+      <p class="alert" role="alert">{{ mensajeError(clientes.error()) }}</p>
+    } @else if (clientes.value(); as p) {
+      <div class="search-results">
+        @for (c of p.content; track c.id) {
+          @if (c.estado) {
+            <button
+              class="button button--secondary"
+              type="button"
+              data-testid="opcion-cliente"
+              (click)="cliente.set(c)"
+            >
+              {{ c.nombres }} {{ c.apellidos }}
+            </button>
+          }
+        } @empty {
+          <p>No se encontraron clientes.</p>
+        }
+      </div>
+    }
+  </section>
+  <section class="form-card sale-section">
+    <h2>Productos</h2>
+    <label class="form-label"
+      >Buscar producto<input
+        class="field"
+        type="search"
+        data-testid="buscar-producto"
+        placeholder="Nombre o categoría"
+        (input)="filtrarProducto($any($event.target).value)"
+    /></label>
+    @if (productos.error()) {
+      <p class="alert" role="alert">{{ mensajeError(productos.error()) }}</p>
+    } @else if (productos.value(); as p) {
+      <div class="search-results">
+        @for (product of p.content; track product.id) {
+          <button
+            class="button button--secondary"
+            type="button"
+            data-testid="opcion-producto"
+            [attr.data-stock]="product.stock"
+            (click)="agregar(product)"
+          >
+            {{ product.nombre }} · {{ product.precio | currency: 'PEN' : 'symbol' : '1.2-2' }} ·
+            {{ product.stock }} un.
+          </button>
+        } @empty {
+          <p>No hay productos activos con stock que coincidan.</p>
+        }
+      </div>
+    }
+    <div class="sale-lines">
+      @for (l of lines(); track l.product.id; let i = $index) {
+        <div class="sale-line">
+          <strong>{{ l.product.nombre }}</strong
+          ><label
+            >Cantidad<input
+              class="field"
+              data-testid="cantidad"
+              type="number"
+              min="1"
+              [max]="l.product.stock"
+              [value]="l.quantity"
+              (input)="cantidad(i, $any($event.target).value)" /></label
+          ><button
+            type="button"
+            class="button button--secondary"
+            aria-label="Quitar producto"
+            (click)="quitar(i)"
+          >
+            Quitar
+          </button>
+        </div>
+      }
+    </div>
+    <div class="sale-total">
+      <span>Total de la venta</span
+      ><strong data-testid="total-venta">{{
+        total() | currency: 'PEN' : 'symbol' : '1.2-2'
+      }}</strong>
+    </div>
+  </section>
+  <div class="form-card__actions">
+    <a routerLink="/ventas" class="button button--secondary">Cancelar</a
+    ><button class="button button--primary" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Registrando…' : 'Registrar venta' }}
+    </button>
+  </div>
+</form>

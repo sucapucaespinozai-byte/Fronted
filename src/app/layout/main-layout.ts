@@ -21,6 +21,13 @@ export class MainLayout {
         permission: 'CATALOGO_LEER' as const,
       },
       { label: 'Productos', route: '/productos', icon: '◈', permission: 'CATALOGO_LEER' as const },
+      { label: 'Clientes', route: '/clientes', icon: '◎', permission: 'CLIENTES_LEER' as const },
+      {
+        label: 'Auditoría',
+        route: '/auditoria',
+        icon: '▣',
+        permission: 'USUARIOS_ADMINISTRAR' as const,
+      },
       { label: 'Ventas', route: '/ventas', icon: '↗', permission: 'VENTAS_LEER' as const },
     ];
     return links.filter((item) => !item.permission || this.auth.tienePermiso(item.permission));

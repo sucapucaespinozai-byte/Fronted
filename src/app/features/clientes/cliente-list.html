@@ -1,0 +1,74 @@
+<section class="page-heading">
+  <div>
+    <h1>Clientes</h1>
+    <p>Consulta y registra clientes para tus ventas.</p>
+  </div>
+</section>
+@if (error()) {
+  <div role="alert" class="alert">{{ error() }}</div>
+}
+@if (mensaje()) {
+  <p role="status">{{ mensaje() }}</p>
+}
+<form
+  *appSiPermiso="'CLIENTES_ESCRIBIR'"
+  class="form-card"
+  [formGroup]="form"
+  (ngSubmit)="guardar()"
+>
+  <h2>Registrar cliente</h2>
+  <div class="filter-card">
+    <label>Nombres<input class="field" formControlName="nombres" /></label
+    ><label>Apellidos<input class="field" formControlName="apellidos" /></label
+    ><label>DNI<input class="field" formControlName="dni" maxlength="8" /></label
+    ><label>Email<input class="field" formControlName="email" type="email" /></label
+    ><label>Teléfono<input class="field" formControlName="telefono" /></label
+    ><label>Dirección<input class="field" formControlName="direccion" /></label>
+  </div>
+  <button class="button button--primary" type="submit" [disabled]="guardando()">
+    Registrar cliente
+  </button>
+</form>
+<section class="data-card">
+  <div class="data-card__toolbar">
+    <label
+      >Buscar cliente<input
+        class="field"
+        type="search"
+        [value]="buscar()"
+        (change)="navegar({ buscar: $any($event.target).value, pagina: 0 })"
+    /></label>
+  </div>
+  @if (clientes.error()) {
+    <p role="alert">{{ mensajeError(clientes.error()) }}</p>
+  } @else if (clientes.value(); as p) {
+    <table>
+      <thead>
+        <tr>
+          <th>CLIENTE</th>
+          <th>DNI</th>
+          <th>EMAIL</th>
+          <th>RESPONSABLE</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of p.content; track c.id) {
+          <tr>
+            <td>{{ c.nombres }} {{ c.apellidos }}</td>
+            <td>{{ c.dni }}</td>
+            <td>{{ c.email }}</td>
+            <td>{{ c.creadoPor || 'Sin registro anterior' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador
+      [pagina]="p.number"
+      [totalPaginas]="p.totalPages"
+      [totalElementos]="p.totalElements"
+      [tamanio]="p.size"
+      (cambioPagina)="navegar({ pagina: $event })"
+      (cambioTamanio)="navegar({ tamanio: $event, pagina: 0 })"
+    />
+  }
+</section>
