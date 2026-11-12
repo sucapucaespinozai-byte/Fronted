@@ -1,0 +1,52 @@
+<nav class="paginador" aria-label="Paginación">
+  <span data-testid="resumen-paginacion"
+    >{{ desde() }}–{{ hasta() }} de {{ totalElementos() }}</span
+  >
+  <label
+    >Filas
+    <select
+      aria-label="Filas por página"
+      [value]="tamanio()"
+      (change)="cambioTamanio.emit(+$any($event.target).value)"
+    >
+      @for (t of [10, 20, 50, 100]; track t) {
+        <option [value]="t" [selected]="t === tamanio()">{{ t }}</option>
+      }
+    </select></label
+  >
+  <button
+    type="button"
+    class="button button--secondary"
+    aria-label="Primera página"
+    [disabled]="pagina() === 0"
+    (click)="ir(0)"
+  >
+    «
+  </button>
+  <button
+    type="button"
+    class="button button--secondary"
+    [disabled]="pagina() === 0"
+    (click)="ir(pagina() - 1)"
+  >
+    Anterior
+  </button>
+  <span data-testid="pagina-actual">Página {{ pagina() + 1 }} de {{ totalPaginas() || 1 }}</span>
+  <button
+    type="button"
+    class="button button--secondary"
+    [disabled]="pagina() >= totalPaginas() - 1"
+    (click)="ir(pagina() + 1)"
+  >
+    Siguiente
+  </button>
+  <button
+    type="button"
+    class="button button--secondary"
+    aria-label="Última página"
+    [disabled]="pagina() >= totalPaginas() - 1"
+    (click)="ir(totalPaginas() - 1)"
+  >
+    »
+  </button>
+</nav>

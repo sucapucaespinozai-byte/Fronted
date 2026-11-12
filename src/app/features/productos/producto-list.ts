@@ -1,56 +1,66 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, input, linkedSignal, numberAttribute, DestroyRef } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { TiendaApiService } from '../../core/data/tienda-api.service';
 import { Producto } from '../../core/data/tienda.model';
 import { mensajeError } from '../../core/utils/http-error';
 import { SiPermisoDirective } from '../../shared/directives/si-permiso.directive';
-
+import { Paginador } from '../../shared/components/paginador/paginador';
 @Component({
-  imports: [CurrencyPipe, RouterLink, SiPermisoDirective],
+  imports: [CurrencyPipe, RouterLink, SiPermisoDirective, Paginador],
   templateUrl: './producto-list.html',
 })
 export class ProductoList {
   private readonly api = inject(TiendaApiService);
-  protected readonly products = signal<Producto[]>([]);
-  protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
-  protected readonly search = signal('');
-  protected readonly filtered = computed(() => {
-    const term = this.search().trim().toLocaleLowerCase();
-    return term
-      ? this.products().filter((product) =>
-        `${product.nombre} ${product.categoria?.nombre ?? ''}`.toLocaleLowerCase().includes(term))
-      : this.products();
+  private readonly router = inject(Router);
+  readonly pagina = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
+  readonly tamanio = input(20, { transform: (v: unknown) => numberAttribute(v, 20) });
+  readonly orden = input('nombre', {
+    transform: (v: unknown) => (typeof v === 'string' ? v : 'nombre'),
   });
-
+  readonly dir = input('asc', { transform: (v: unknown) => (typeof v === 'string' ? v : 'asc') });
+  readonly buscar = input('', { transform: (v: unknown) => (typeof v === 'string' ? v : '') });
+  protected readonly filtro = new Subject<string>();
+  protected readonly productos = rxResource({
+    params: () => ({
+      pagina: this.pagina(),
+      tamanio: this.tamanio(),
+      ordenarPor: this.orden(),
+      direccion: this.dir(),
+      buscar: this.buscar(),
+    }),
+    stream: ({ params }) => this.api.listarProductos(params),
+  });
+  protected readonly pag = linkedSignal<Pagina<Producto> | undefined, Pagina<Producto> | undefined>(
+    {
+      source: () => (this.productos.error() ? undefined : this.productos.value()),
+      computation: (n, p) => n ?? p?.value,
+    },
+  );
+  protected readonly mensajeError = mensajeError;
   constructor() {
-    this.load();
+    this.filtro
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((buscar) => this.navegar({ buscar, pagina: 0 }));
   }
-
-  load(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    this.api.listarProductos().subscribe({
-      next: (items) => {
-        this.products.set(items);
-        this.loading.set(false);
-      },
-      error: (failure: unknown) => {
-        this.error.set(mensajeError(failure));
-        this.loading.set(false);
-      },
+  protected navegar(c: Record<string, string | number>) {
+    void this.router.navigate([], { queryParams: c, queryParamsHandling: 'merge' });
+  }
+  protected ordenarPor(campo: string) {
+    this.navegar({
+      orden: campo,
+      dir: this.orden() === campo && this.dir() === 'asc' ? 'desc' : 'asc',
+      pagina: 0,
     });
   }
-
-  eliminar(product: Producto): void {
-    if (!globalThis.confirm(`¿Dar de baja el producto "${product.nombre}"?`)) {
-      return;
-    }
-    this.error.set(null);
-    this.api.eliminarProducto(product.id).subscribe({
-      next: () => this.load(),
-      error: (failure: unknown) => this.error.set(mensajeError(failure)),
-    });
+  eliminar(p: Producto) {
+    if (!confirm(`¿Dar de baja el producto "${p.nombre}"?`)) return;
+    this.api
+      .eliminarProducto(p.id)
+      .subscribe({ next: () => this.productos.reload(), error: (e) => alert(mensajeError(e)) });
   }
 }
+
+import { Pagina } from '../../core/models/pagina';

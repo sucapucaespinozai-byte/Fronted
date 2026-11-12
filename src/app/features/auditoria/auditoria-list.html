@@ -1,0 +1,79 @@
+<section class="page-heading">
+  <div>
+    <h1>Auditoría</h1>
+    <p>Operaciones confirmadas, responsables y códigos de seguimiento.</p>
+  </div>
+</section>
+<form class="filter-card" [formGroup]="form" (ngSubmit)="buscar()">
+  <label
+    >Usuario<input class="field" formControlName="usuario" placeholder="admin o vendedor" /></label
+  ><label
+    >Acción<select class="field" formControlName="accion">
+      <option value="">Todas</option>
+      @for (
+        a of [
+          'LOGIN_EXITOSO',
+          'LOGIN_FALLIDO',
+          'VENTA_REGISTRADA',
+          'PRECIO_MODIFICADO',
+          'PRODUCTO_ELIMINADO',
+        ];
+        track a
+      ) {
+        <option [value]="a">{{ a }}</option>
+      }
+    </select></label
+  ><label>Desde<input class="field" type="date" formControlName="desde" /></label
+  ><label>Hasta<input class="field" type="date" formControlName="hasta" /></label
+  ><button type="submit" class="button button--dark">Filtrar</button
+  ><button type="button" class="button button--secondary" (click)="eventos.reload()">
+    Actualizar
+  </button>
+</form>
+@if (eventos.error()) {
+  <div class="alert" role="alert">{{ mensajeError(eventos.error()) }}</div>
+}
+@if (pag(); as p) {
+  <section class="data-card">
+    <div class="table-scroll">
+      <table data-testid="tabla-auditoria">
+        <thead>
+          <tr>
+            <th>FECHA</th>
+            <th>USUARIO</th>
+            <th>ACCIÓN</th>
+            <th>ENTIDAD</th>
+            <th>DETALLE</th>
+            <th>CÓDIGO DE SEGUIMIENTO</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of p.content; track e.id) {
+            <tr>
+              <td>{{ e.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+              <td>{{ e.usuario }}</td>
+              <td>{{ e.accion }}</td>
+              <td>{{ e.entidad }} #{{ e.entidadId }}</td>
+              <td>{{ e.detalle || '—' }}</td>
+              <td>
+                <code>{{ e.requestId || '—' }}</code>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No se encontraron eventos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador
+      [pagina]="p.number"
+      [totalPaginas]="p.totalPages"
+      [totalElementos]="p.totalElements"
+      [tamanio]="p.size"
+      (cambioPagina)="navegar({ pagina: $event })"
+      (cambioTamanio)="navegar({ pagina: 0, tamanio: $event })"
+    />
+  </section>
+}

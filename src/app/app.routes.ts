@@ -107,6 +107,21 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'clientes',
+        canActivate: [permisoGuard],
+        data: { permiso: 'CLIENTES_LEER' },
+        title: 'Clientes | PharmaSoft',
+        loadComponent: () => import('./features/clientes/cliente-list').then((m) => m.ClienteList),
+      },
+      {
+        path: 'auditoria',
+        canActivate: [permisoGuard],
+        data: { permiso: 'USUARIOS_ADMINISTRAR' },
+        title: 'Auditoría | PharmaSoft',
+        loadComponent: () =>
+          import('./features/auditoria/auditoria-list').then((m) => m.AuditoriaList),
+      },
+      {
         path: 'cuenta',
         title: 'Mi cuenta | PharmaSoft',
         loadComponent: () => import('./features/cuenta/cuenta').then((module) => module.Cuenta),

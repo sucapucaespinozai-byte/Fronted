@@ -1,0 +1,21 @@
+.paginador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 18px;
+  border-top: 1px solid #e2e8f0;
+}
+.paginador > span:first-child {
+  margin-right: auto;
+  color: #475569;
+}
+.paginador select {
+  padding: 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+}
+.paginador button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
