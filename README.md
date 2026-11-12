@@ -164,3 +164,20 @@ En un servidor usa un gestor de procesos y la configuración de su propio entorn
 El informe, las capturas para la presentación y las herramientas de medición se
 entregan por separado. El proyecto conserva el código de la aplicación y sus
 mejoras, sin informes PDF ni capturas académicas dentro de sus carpetas.
+
+## Sesión 14: probar la integración
+
+Abre http://localhost:8081/login después de ejecutar el lanzador de la práctica. `npm start` también ofrece desarrollo en http://localhost:4200.
+
+- Productos: búsqueda en servidor, orden por nombre/precio/stock, tamaño y página en la URL. Recargar conserva la página.
+- Ventas: filtros de cliente/estado/fechas y paginación. Cambiar filtros, tamaño u orden vuelve a la página 1.
+- Clientes: registro y consulta según permisos. El cliente nuevo se encuentra en Nueva venta.
+- Nueva venta: buscadores en servidor, productos activos con existencias, detalle y comprobante. El borrador se conserva en esta pestaña por usuario para recuperarlo al iniciar sesión nuevamente.
+- Auditoría: menú exclusivo de administración, filtros y requestId para seguir una operación.
+- El reporte de productos más vendidos sigue en Inicio para administración.
+
+### Pruebas de navegador
+
+Ejecuta `npm ci`, luego `npm run e2e` o `npm run e2e:estable` para repetir siete pruebas tres veces. Chrome instalado, un worker y cero reintentos. Backend y Redis deben estar encendidos. Variables opcionales: `E2E_ADMIN_PASSWORD`, `E2E_VENDEDOR_PASSWORD`, `E2E_ALMACEN_PASSWORD`. Los valores predeterminados son cuentas de demostración de la guía. Cambiarlos en un servidor real. No versionar credenciales reales.
+
+Reportes y trazas: carpetas ignoradas `playwright-report/` y `test-results/`. Incidencias: `docs/incidencias.md`. La presentación se preparará aparte cuando se solicite.
