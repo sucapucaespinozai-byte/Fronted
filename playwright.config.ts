@@ -14,10 +14,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     ...devices['Desktop Chrome'],
-    channel: 'chrome',
+    channel: process.env['E2E_BROWSER'] || 'msedge',
   },
   projects: [{ name: 'chromium' }],
-  webServer: {
+  webServer: process.env['E2E_URL'] ? undefined : {
     command: 'npm start -- --host 127.0.0.1',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
