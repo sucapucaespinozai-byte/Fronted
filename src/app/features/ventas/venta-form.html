@@ -112,7 +112,7 @@
   </section>
   <div class="form-card__actions">
     <a routerLink="/ventas" class="button button--secondary">Cancelar</a
-    ><button class="button button--primary" type="submit" [disabled]="saving()">
+    ><button class="button button--primary" type="submit" [disabled]="saving() || !cliente() || !lines().length">
       {{ saving() ? 'Registrando…' : 'Registrar venta' }}
     </button>
   </div>

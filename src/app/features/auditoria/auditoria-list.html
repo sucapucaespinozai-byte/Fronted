@@ -8,7 +8,7 @@
   <label
     >Usuario<input class="field" formControlName="usuario" placeholder="admin o vendedor" /></label
   ><label
-    >Acción<select class="field" formControlName="accion">
+    >Acción<select class="field" formControlName="accion" aria-label="Acción">
       <option value="">Todas</option>
       @for (
         a of [
@@ -17,6 +17,8 @@
           'VENTA_REGISTRADA',
           'PRECIO_MODIFICADO',
           'PRODUCTO_ELIMINADO',
+          'CLIENTE_REGISTRADO',
+          'CATEGORIA_REGISTRADA',
         ];
         track a
       ) {
